@@ -452,9 +452,9 @@ class JobProcessor
 		if true 
 			bs = ModifyBuildSetting.new(@xcode_project, @issimulator);
 			bs.add_other_linker_flag;
-			bs.add_search_paths(@unityProjectDir);
+			bs.add_search_paths(@unitySourceDir);
 			bs.add_other_c_flag;
-			pchpath = File.join('$SRCROOT', @unityProjectDir, 'Classes', 'Prefix.pch');
+			pchpath = File.join('$SRCROOT', @unitySourceDir, 'Classes', 'Prefix.pch');
 			bs.set_prefix_pch(pchpath);
 			bs.set_c_cpp_flags;
 			bs.set_user_define_macro;
