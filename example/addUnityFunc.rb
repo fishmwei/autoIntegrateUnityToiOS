@@ -29,7 +29,6 @@ class OptionReader
 
 			opts.on("-s", "--issimulator", "模拟器") do |issimulator|
 				options.issimulator = true;
-				puts options.issimulator
 			end
 
 			opts.on("-u", "--unityProjectDir [dir]，[required]", "unity工程目录, 是一个工程根目录的相对路径") do |unityProjectDir|
@@ -71,7 +70,9 @@ class AddFilesHandler
 		#remove main.m
 		build_phase = @target.source_build_phase
 		build_phase.files.each do |file|
-			if file.file_ref.name=="main.m" then
+			# puts file.file_ref.path
+			if File::basename(file.file_ref.path)=="main.m" then
+				puts "remove main.m #{file.file_ref.path}"
 				file.remove_from_project;
 				build_phase.remove_file_reference(file)
 				file.file_ref.remove_from_project
@@ -115,20 +116,18 @@ class AddFilesHandler
 		referenceData
 		referenceClassess
 		referenceLibraries
-		referenceUnityUtil
+		# referenceUnityUtil
 	end
 
 	#添加Data目录， 并拷贝
 	def referenceData
 		dataPath = File.join("#{@unityPath}", "Data");
-		puts dataPath;
 
 		fr = @renderGroup.new_reference(dataPath);
 		@target.add_resources([fr]);
 	end
 
 	def createGroup(parentGroup, groupName, groupPath)
-		#puts groupPath
 
 		thisGroup = parentGroup[groupName];
 		if thisGroup 
@@ -145,23 +144,18 @@ class AddFilesHandler
 			if file == "." || file == ".." then
 				next
 			end
-			#puts file 
 			fileSuffix = file[/\.[^\.]+$/];
 			filePath = File.join(groupPath, file);
-			#puts filePath;
 
 			if File::directory?(filePath) then 
 				createGroup(thisGroup, file, filePath);
 			else
-				# fileRealPath =  filePath ;
 				fileRealPath = File.join("#{$base_path}", filePath);
-				puts fileRealPath
-				#puts fileSuffix
 				if fileSuffix == '.m' || fileSuffix == '.mm' || fileSuffix == '.c' || fileSuffix == '.cpp' || fileSuffix == '.a'#add source file
 					fr = thisGroup.new_reference(fileRealPath);
-					if file != 'main.mm'
+					# if file != 'main.mm'
 						fileRefs << fr;		
-					end
+					# end
 
 					if file == "libiPhone-lib.a" then 
 						AddFrameworksHandler.addUnityiPhoneLib(@project, fileRealPath);
@@ -179,8 +173,6 @@ class AddFilesHandler
 			 	end
 			end
 		end
-		# puts 'add file fileRefs'
-		# puts fileRefs.length
 		if fileRefs.length > 0 then
 			@target.add_file_references(fileRefs);
 		end
@@ -196,12 +188,12 @@ class AddFilesHandler
 		createGroup(@renderGroup, "Libraries", librariesPath)
 	end
 
-	def referenceUnityUtil
-		puts 'referenceUnityUtil  bbbbbbbbbbbbb'
-		# unityPath = "#{$base_path}/#{$app_target_name}/unity/unityUtil"
-		unityPath = File.join("./#{$app_target_name}/unity", "unityUtil");
-		createGroup(@renderGroup, File::basename(unityPath), unityPath)
-	end
+	# def referenceUnityUtil
+	# 	puts 'referenceUnityUtil  bbbbbbbbbbbbb'
+	# 	# unityPath = "#{$base_path}/#{$app_target_name}/unity/unityUtil"
+	# 	unityPath = File.join("./#{$app_target_name}/unity", "unityUtil");
+	# 	createGroup(@renderGroup, File::basename(unityPath), unityPath)
+	# end
 end
 
 ######################################### add frameworks #############################################
@@ -256,7 +248,6 @@ class AddFrameworksHandler
 			names.each do |name|
 				next if AddFrameworksHandler.exist_framework?(build_phase, name)
 				path = "usr/lib/"+name
-				puts path
 				file_ref = framework_group.new_reference(path)
 				file_ref.name = name
 				file_ref.source_tree = 'SDKROOT'
